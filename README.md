@@ -7,6 +7,51 @@ If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badg
 
 WX Station Alerts Dashboard
 ============================
+A web application built with R Shiny for monitoring and analyzing data from weather stations across British Columbia. This system provides real-time monitoring, data validation, and analysis tools for weather station data, with a focus on supporting fire monitoring and management operations.
+
+## Features
+
+- Real-time weather station monitoring across multiple fire centers and zones
+- Visualization tools for weather metrics including:
+  - Temperature analysis and trend detection
+  - Wind speed and direction monitoring
+  - Relative humidity tracking
+  - Precipitation measurement
+  - Power system monitoring (battery voltage, solar charging)
+- Interactive data filtering by:
+  - Fire centre and zone
+  - Individual or multiple stations
+  - Time periods (last N hours, specific date, or date range)
+- Automated alerts for:
+  - Missing data entries
+  - Sensor anomalies
+  - Power system status
+  - Environmental conditions
+- Space weather alert integration
+- CRMP (Climate Reduction Monitoring Program) sensor support
+
+## Requirements
+
+- R (latest stable version recommended)
+- Required R packages:
+  - shiny
+  - RODBC
+  - dplyr
+  - lubridate
+  - plotly
+  - bslib
+  - jsonlite
+  - DT
+  - zoo
+  - viridis
+  - ggplot2
+- Microsoft SQL Server with appropriate database access
+- Network access to weather station data sources
+
+## Project Status
+
+Active development - The system is currently in production and actively maintained.
+
 
 ### Getting Help or Reporting an Issue
 

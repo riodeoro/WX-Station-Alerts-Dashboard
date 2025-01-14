@@ -7,7 +7,7 @@ If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badg
 
 WX Station Alerts Dashboard
 ============================
-A web application built with R Shiny for monitoring and analyzing data from BC Wildfire Service weather stations 
+A web application built with R Shiny for monitoring and analyzing data from BC Wildfire Service weather stations.
 
 ## Features
 

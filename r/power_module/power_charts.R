@@ -64,22 +64,18 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
   # Create text labels for the bars
   plot_data$bar_text <- sprintf("%+.2fV", plot_data$value)
 
-  # Handle solar voltage range calculation safely
-  max_vslr <- if (all(is.na(station_data$Vslr))) 20 else max(station_data$Vslr, na.rm = TRUE)
-  min_vslr <- if (all(is.na(station_data$Vslr))) 0 else min(station_data$Vslr, na.rm = TRUE)
-  vslr_range <- max_vslr - min_vslr
-  if (vslr_range == 0) vslr_range <- 1  # Prevent division by zero
-
-  # Calculate y-axis range safely
-  y_values <- c(plot_data$cumulative - plot_data$value, plot_data$cumulative, 
-                plot_data$vslr)
-  y_min <- min(y_values, na.rm = TRUE)
-  y_max <- max(y_values, na.rm = TRUE)
-  y_range <- y_max - y_min
-  if (y_range == 0) y_range <- 1  # Prevent zero range
-  y_padding <- y_range * 0.1
-  y_min <- y_min - y_padding
-  y_max <- y_max + y_padding
+  # Calculate y-axis ranges for battery voltage
+  battery_values <- c(plot_data$cumulative - plot_data$value, plot_data$cumulative)
+  batt_y_min <- min(battery_values, na.rm = TRUE)
+  batt_y_max <- max(battery_values, na.rm = TRUE)
+  batt_y_range <- batt_y_max - batt_y_min
+  batt_y_padding <- batt_y_range * 0.1
+  
+  # Separate y-axis range for solar voltage
+  solar_y_min <- if(all(is.na(plot_data$vslr))) 0 else min(plot_data$vslr, na.rm = TRUE)
+  solar_y_max <- if(all(is.na(plot_data$vslr))) 20 else max(plot_data$vslr, na.rm = TRUE)
+  solar_y_range <- solar_y_max - solar_y_min
+  solar_y_padding <- solar_y_range * 0.1
 
   # Create hover text
   plot_data$hover_text <- sprintf(
@@ -90,10 +86,10 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
     ifelse(is.na(plot_data$vslr), 0, plot_data$vslr)
   )
 
-  # Create the plot
+  # Create the plot with dual y-axes
   p <- plot_ly()
   
-  # Add 12V reference line
+  # Add 12V reference line using battery voltage axis
   p <- p %>% add_trace(
     x = range(plot_data$measure),
     y = c(12, 12),
@@ -104,7 +100,8 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
       width = 0.5
     ),
     showlegend = FALSE,
-    hoverinfo = "none"
+    hoverinfo = "none",
+    yaxis = "y"
   )
 
   # Add background shading for solar voltage
@@ -112,7 +109,7 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
     norm_vslr <- if (is.na(plot_data$vslr[i])) {
       0
     } else {
-      (plot_data$vslr[i] - min_vslr) / vslr_range
+      (plot_data$vslr[i] - solar_y_min) / solar_y_range
     }
     
     color <- if (is.na(norm_vslr)) {
@@ -129,7 +126,9 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
       x = c(plot_data$measure[i], plot_data$measure[i],
             plot_data$measure[i+1], plot_data$measure[i+1], 
             plot_data$measure[i]),
-      y = c(y_min, y_max, y_max, y_min, y_min),
+      y = c(batt_y_min - batt_y_padding, batt_y_max + batt_y_padding, 
+            batt_y_max + batt_y_padding, batt_y_min - batt_y_padding, 
+            batt_y_min - batt_y_padding),
       type = "scatter",
       mode = "lines",
       fill = "toself",
@@ -141,7 +140,7 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
     )
   }
 
-  # Add solar voltage trace
+  # Add solar voltage trace on secondary y-axis
   if (!all(is.na(plot_data$vslr))) {
     p <- p %>% add_trace(
       data = plot_data,
@@ -155,7 +154,7 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
         dash = "dot"  
       ),
       name = "Solar Voltage",
-      yaxis = "y",
+      yaxis = "y3",  # Use separate y-axis for solar voltage
       hovertemplate = paste0(
         "Time: %{x|%Y-%m-%d %H:%M:%S}<br>",
         "Solar Voltage: %{y:.2f}V",
@@ -212,10 +211,11 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
     ),
     hovertext = ~hover_text,
     hoverinfo = "text",
-    name = "Battery Change"
+    name = "Battery Change",
+    yaxis = "y"
   )
 
-  # Complete the layout
+  # Complete the layout with separate y-axes
   p <- p %>% layout(
     title = list(
       text = paste("Battery and Solar Voltage -", selected_station),
@@ -229,11 +229,11 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
       gridcolor = "#E2E2E2"
     ),
     yaxis = list(
-      title = "Voltage (V)",
+      title = "Battery Voltage (V)",
       zeroline = FALSE,
       showgrid = TRUE,
       gridcolor = "#E2E2E2",
-      range = c(y_min, max(max(plot_data$vslr, na.rm = TRUE), y_max))
+      range = c(batt_y_min - batt_y_padding, batt_y_max + batt_y_padding)
     ),
     yaxis2 = list(
       title = "Temperature (°C)",
@@ -241,6 +241,15 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
       side = "right",
       showgrid = FALSE,
       zeroline = FALSE
+    ),
+    yaxis3 = list(
+      title = "Solar Voltage (V)",
+      overlaying = "y",
+      side = "right",
+      position = 0.85,  # Position the axis slightly left of the temperature axis
+      showgrid = FALSE,
+      zeroline = FALSE,
+      range = c(solar_y_min - solar_y_padding, solar_y_max + solar_y_padding)
     ),
     showlegend = TRUE,
     plot_bgcolor = "white",
@@ -257,7 +266,6 @@ create_vbat_waterfall_plot <- function(power_data, selected_station) {
 
   return(p)
 }
-
 
 # Function to create normalized voltage trends plot
 create_vbat_trends_plot <- function(trend_data, selected_stations = NULL) {

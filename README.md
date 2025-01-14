@@ -74,6 +74,6 @@ Copyright 2025 Province of British Columbia
    See the License for the specific language governing permissions and
    limitations under the License.
 
-
+```
 ---
 *This project was created using the [bcgovr](https://github.com/bcgov/bcgovr) package.* 

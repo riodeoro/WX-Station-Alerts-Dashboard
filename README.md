@@ -7,7 +7,7 @@ If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badg
 
 WX Station Alerts Dashboard
 ============================
-A web application built with R Shiny for monitoring and analyzing data from weather stations across British Columbia. This system provides real-time monitoring, data validation, and analysis tools for weather station data, with a focus on supporting fire monitoring and management operations.
+A web application built with R Shiny for monitoring and analyzing data from weather stations across British Columbia. 
 
 ## Features
 

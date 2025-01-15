@@ -5,6 +5,10 @@ See <https://github.com/BCDevExchange/Our-Project-Docs/blob/master/discussion/pr
 If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badge' Addin.
 -->
 
+<div align="center">
+<img src="https://github.com/user-attachments/assets/e55ee554-8469-432d-8e3d-dba1b0e50194" width="50%" alt="WX Station Alerts Dashboard">
+</div>
+
 WX Station Alerts Dashboard
 ============================
 A web application built with R Shiny for monitoring and analyzing data from BC Wildfire Service weather stations.

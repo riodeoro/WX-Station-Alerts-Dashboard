@@ -294,7 +294,7 @@ render_recent_entries <- function(WX_stations) {
   datatable(
     combined_data,
     options = list(
-      pageLength = 29,
+      pageLength = 20,
       order = list(list(0, 'asc'), list(1, 'desc')),
       scrollX = TRUE,
       dom = '<"top"f>rt<"bottom"ip>',

@@ -31,7 +31,7 @@ A web application built with R Shiny for monitoring and analyzing data from BC W
   - Sensor anomalies
   - Power system status
   - Environmental conditions
-  - CRMP (Climate Reduction Monitoring Program) sensor support
+  - CRMP (Climate Related Monitoring Program) sensor support
 
 ## Requirements
 

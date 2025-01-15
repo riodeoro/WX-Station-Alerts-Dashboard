@@ -62,7 +62,7 @@ render_report_status_output <- function(last_entry_time_check) {
   datatable(
     last_entry_time_check,
     options = list(
-      pageLength = 20,  # Show more entries per page
+      pageLength = 10,  
       order = list(list(1, 'asc')),
       columnDefs = list(
         list(width = "20%", targets = c(0, 1, 2, 3))
@@ -294,7 +294,7 @@ render_recent_entries <- function(WX_stations) {
   datatable(
     combined_data,
     options = list(
-      pageLength = 20,
+      pageLength = 29,
       order = list(list(0, 'asc'), list(1, 'desc')),
       scrollX = TRUE,
       dom = '<"top"f>rt<"bottom"ip>',

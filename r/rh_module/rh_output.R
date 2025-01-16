@@ -29,6 +29,7 @@ render_low_rh_output <- function(WX_stations) {
 #' @param WX_stations List of weather station data
 #' @param selected_station Selected station name or "All Stations"
 # Function to print section header with consistent formatting
+# Print section header with consistent formatting
 print_section_header <- function(text, is_subsection = FALSE) {
   if (!is_subsection) {
     cat("\n", paste0(rep("=", 80), collapse=""), "\n")
@@ -41,9 +42,6 @@ print_section_header <- function(text, is_subsection = FALSE) {
   }
 }
 
-#' Render the consecutive RH 100% output with percentages
-#' @param stations_data List of weather station data
-#' @param selected_station Selected station name or "All Stations"
 render_consecutive_rh_output <- function(stations_data, selected_station = "All Stations") {
   consecutive_rh_results <- check_consecutive_rh(stations_data)
   
@@ -68,10 +66,9 @@ render_consecutive_rh_output <- function(stations_data, selected_station = "All 
     stringsAsFactors = FALSE
   )
   
-  # Add percentage calculations for all stations
+  # Add percentage calculations
   station_summary$rh_percentage <- sapply(station_summary$station, function(station) {
-    station_data <- stations_data[[station]]
-    calculate_rh_percentage(station_data)
+    calculate_rh_percentage(stations_data[[station]])
   })
   
   # Add counts and flagged counts
@@ -127,15 +124,20 @@ render_consecutive_rh_output <- function(stations_data, selected_station = "All 
                station_summary$rh_percentage[i]))
   }
   
-  # Print Flagged Events section
+  # Create separate mappings for flagged and non-flagged span numbers
+  flagged_span_numbers <- list()
+  non_flagged_span_numbers <- list()
+  
+  # Print Flagged Events section first
   flagged_results <- consecutive_rh_results[consecutive_rh_results$Min_Temp > 0 & consecutive_rh_results$Total_Rn_1 == 0, ]
   if (nrow(flagged_results) > 0) {
     print_section_header("Flagged Spans")
     
-    # Sort flagged results first by station order, then by start time
+    # Sort flagged results by station order and then by start time
+    flagged_results$start_time_posix <- as.POSIXct(flagged_results$Start_Time, format="%Y-%b-%d %H:%M:%S")
     flagged_results <- flagged_results[order(
       match(flagged_results$Station, station_order),
-      as.POSIXct(flagged_results$Start_Time, format="%Y-%b-%d %H:%M:%S")
+      flagged_results$start_time_posix
     ), ]
     
     current_station <- ""
@@ -144,9 +146,17 @@ render_consecutive_rh_output <- function(stations_data, selected_station = "All 
         if (current_station != "") cat("\n")
         current_station <- flagged_results$Station[i]
         print_section_header(current_station, TRUE)
-      } else {
-        cat("\n\nSpan ", i, "\n", sep="")
+        # Initialize flagged span counter for this station
+        if (is.null(flagged_span_numbers[[current_station]])) {
+          flagged_span_numbers[[current_station]] <- 1
+        }
       }
+      
+      span_num <- flagged_span_numbers[[current_station]]
+      flagged_span_numbers[[current_station]] <- span_num + 1
+      
+      if (span_num > 1) cat("\n")
+      cat(sprintf("Span %d (FLAGGED)\n", span_num))
       
       cat(sprintf("Start Time: %s\nEnd Time: %s\nDuration: %d hours\nTotal Rain: %.1f mm\nAvg Temp: %.1f°C\nMax Temp: %.1f°C\nMin Temp: %.1f°C\n",
                 flagged_results$Start_Time[i],
@@ -159,31 +169,35 @@ render_consecutive_rh_output <- function(stations_data, selected_station = "All 
     }
   }
   
-  # Print Detailed Records section
+  # Print Non-Flagged Records section
   non_flagged <- consecutive_rh_results[!(consecutive_rh_results$Min_Temp > 0 & consecutive_rh_results$Total_Rn_1 == 0), ]
   if (nrow(non_flagged) > 0) {
-    print_section_header("ALL EXTENDED RH 100% PERIODS")
+    print_section_header("All Other Extended RH 100% Periods")
     
     # Sort non-flagged results by station order and start time
+    non_flagged$start_time_posix <- as.POSIXct(non_flagged$Start_Time, format="%Y-%b-%d %H:%M:%S")
     non_flagged <- non_flagged[order(
       match(non_flagged$Station, station_order),
-      as.POSIXct(non_flagged$Start_Time, format="%Y-%b-%d %H:%M:%S")
+      non_flagged$start_time_posix
     ), ]
     
-    # Add span counter per station
-    station_span_counter <- 1
     current_station <- ""
     for (i in 1:nrow(non_flagged)) {
       if (current_station != non_flagged$Station[i]) {
         if (current_station != "") cat("\n")
         current_station <- non_flagged$Station[i]
         print_section_header(current_station, TRUE)
-        station_span_counter <- 1
-      } else {
-        station_span_counter <- station_span_counter + 1
+        # Initialize non-flagged span counter for this station
+        if (is.null(non_flagged_span_numbers[[current_station]])) {
+          non_flagged_span_numbers[[current_station]] <- 1
+        }
       }
       
-      cat(if(station_span_counter == 1) "" else "\n\n", "Span ", station_span_counter, "\n", sep="")
+      span_num <- non_flagged_span_numbers[[current_station]]
+      non_flagged_span_numbers[[current_station]] <- span_num + 1
+      
+      if (span_num > 1) cat("\n")
+      cat(sprintf("Span %d\n", span_num))
       
       cat(sprintf("Start Time: %s\nEnd Time: %s\nDuration: %d hours\nTotal Rain: %.1f mm\nAvg Temp: %.1f°C\nMax Temp: %.1f°C\nMin Temp: %.1f°C\n",
                 non_flagged$Start_Time[i],

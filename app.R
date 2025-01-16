@@ -30,11 +30,11 @@ library(ggplot2)
 
 # ---------- Source Files ----------
 # Core files
-source("ui_definition.R")
 source("global_functions.R")
 source("global_resources.R")
 
 addResourcePath("www", "www")
+source("ui_definition.R")
 
 # Module function files
 source("r/db_module/db_functions.R")
